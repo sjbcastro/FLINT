@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.10.0)
 project(moja VERSION 1.0.6 LANGUAGES CXX)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 #turn on using solution folders
 set_property( GLOBAL PROPERTY USE_FOLDERS ON)
 

@@ -14,6 +14,7 @@ set(TEST_SRCS
     src/flinttests.cpp
     src/landunitcontrollertests.cpp
     src/lookuptransformtests.cpp
+    src/loggingtests.cpp
     src/matrixtestsublas.cpp
 	src/operationmanagertestutils.cpp
 	src/operationmanagersimpletests.cpp
