@@ -16,11 +16,10 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/program_options.hpp>
 
-#include <Poco/File.h>
-
 #include <memory>
 #include <string>
 #include <fstream>
+#include <filesystem>
 
 static constexpr const char* CLI_VERSION_STRING = "flint cli version 1.0.0";
 
@@ -32,8 +31,7 @@ using mf::configuration::LocalDomainType;
 using mf::ILocalDomainController;
 
 bool checkFilePath(const std::string& filePath) {
-    Poco::File file(filePath);
-    if (!file.exists()) {
+   if (!std::filesystem::exists(filePath)) {
         std::cerr << "File not found: " << filePath;
         return false;
     }
