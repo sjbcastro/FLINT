@@ -2,15 +2,13 @@
 
 #include "moja/environment.h"
 
-#include <Poco/File.h>
-#include <Poco/Path.h>
-
 #include <boost/log/attributes/clock.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/utility/setup/file.hpp>
 #include <boost/log/utility/setup/from_stream.hpp>
 
 #include <fstream>
+#include <filesystem>
 
 namespace moja {
 
@@ -34,7 +32,7 @@ void Logging::init() {
    logging::register_simple_filter_factory<logging::trivial::severity_level, char>("Severity");
 
    // Determine which log config to load, searching the working folder then the exe folder.
-   if (_explicitConfigurationFileSet && Poco::File(_explicitConfigurationFile).exists()) {
+   if (_explicitConfigurationFileSet && std::filesystem::exists(_explicitConfigurationFile)) {
       std::ifstream loggingConfig(_explicitConfigurationFile);
       logging::init_from_stream(loggingConfig);
       _loggingConfigurationFile = _explicitConfigurationFile;
@@ -44,17 +42,17 @@ void Logging::init() {
       boost::log::init_from_stream(s);
       _loggingConfigurationFile = "internal text";
    } else {
-      std::string filenameToCheck = Poco::Path::current() + _defaultFileName;
-      if (Poco::File(filenameToCheck).exists()) {
+      std::filesystem::path filenameToCheck = std::filesystem::current_path() / _defaultFileName;
+      if (std::filesystem::exists(filenameToCheck)) {
          std::ifstream loggingConfig(filenameToCheck);
          logging::init_from_stream(loggingConfig);
-         _loggingConfigurationFile = filenameToCheck;
+         _loggingConfigurationFile = filenameToCheck.string();
       } else {
          filenameToCheck = moja::Environment::startProcessFolder() + _defaultFileName;
-         if (Poco::File(filenameToCheck).exists()) {
+         if (std::filesystem::exists(filenameToCheck)) {
             std::ifstream loggingConfig(filenameToCheck);
             logging::init_from_stream(loggingConfig);
-            _loggingConfigurationFile = filenameToCheck;
+            _loggingConfigurationFile = filenameToCheck.string();
          } else {
             std::stringstream s;
             s << "[Sinks.console]" << std::endl;
