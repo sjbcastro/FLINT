@@ -6,9 +6,6 @@
 #include <moja/dynamic.h>
 #include <moja/utility.h>
 
-#include <Poco/File.h>
-#include <Poco/Path.h>
-
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
 
@@ -16,6 +13,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <filesystem>
 
 namespace moja {
 namespace datarepository {
@@ -27,24 +25,16 @@ struct BlockIdx;
 
 class DATAREPOSITORY_API MetaDataRasterReaderInterface {
   public:
-   MetaDataRasterReaderInterface(const std::string& path, const std::string& prefix, const DynamicObject& settings)
+   MetaDataRasterReaderInterface(const std::filesystem::path& path, const std::string& prefix, const DynamicObject& settings)
        : _settings(settings){};
    virtual ~MetaDataRasterReaderInterface() = default;
 
    virtual DynamicObject readMetaData() const = 0;
 
-   static bool file_exists(const std::string& path);
    static std::string tile_id(const Point& origin);
 
    DynamicObject _settings;
 };
-
-// --------------------------------------------------------------------------------------------
-
-inline bool MetaDataRasterReaderInterface::file_exists(const std::string& path) {
-   Poco::File pf(path);
-   return pf.exists();
-}
 
 // --------------------------------------------------------------------------------------------
 
@@ -60,7 +50,7 @@ inline std::string MetaDataRasterReaderInterface::tile_id(const Point& origin) {
 
 class DATAREPOSITORY_API TileRasterReaderInterface {
   public:
-   TileRasterReaderInterface(const std::string& path, const Point& origin, const std::string& prefix,
+   TileRasterReaderInterface(const std::filesystem::path& path, const Point& origin, const std::string& prefix,
                              const TileBlockCellIndexer& indexer, const DynamicObject& settings)
        : _origin(origin), _indexer(indexer), _settings(settings) {}
    virtual ~TileRasterReaderInterface() = default;
@@ -76,7 +66,6 @@ class DATAREPOSITORY_API TileRasterReaderInterface {
    virtual void readBlockData(const BlockIdx& blkIdx, std::vector<float>* block) const = 0;
    virtual void readBlockData(const BlockIdx& blkIdx, std::vector<double>* block) const = 0;
 
-   static bool file_exists(const std::string& path);
    static std::string tile_id(const Point& origin);
 
   protected:
@@ -84,14 +73,6 @@ class DATAREPOSITORY_API TileRasterReaderInterface {
    const TileBlockCellIndexer& _indexer;
    DynamicObject _settings;
 };
-
-// --------------------------------------------------------------------------------------------
-
-inline bool TileRasterReaderInterface::file_exists(const std::string& path) {
-   Poco::File pf(path);
-   return pf.exists();
-}
-
 // --------------------------------------------------------------------------------------------
 
 inline std::string TileRasterReaderInterface::tile_id(const Point& origin) {
@@ -106,7 +87,7 @@ inline std::string TileRasterReaderInterface::tile_id(const Point& origin) {
 
 class DATAREPOSITORY_API StackRasterReaderInterface {
   public:
-   StackRasterReaderInterface(const std::string& path, const Point& origin, const std::string& prefix,
+   StackRasterReaderInterface(const std::filesystem::path& path, const Point& origin, const std::string& prefix,
                               const TileBlockCellIndexer& indexer, const DynamicObject& settings)
        : _origin(origin), _indexer(indexer), _settings(settings) {}
    virtual ~StackRasterReaderInterface() = default;
@@ -122,7 +103,6 @@ class DATAREPOSITORY_API StackRasterReaderInterface {
    virtual void readBlockData(const BlockIdx& blkIdx, int nSeries, std::vector<float>* block) const = 0;
    virtual void readBlockData(const BlockIdx& blkIdx, int nSeries, std::vector<double>* block) const = 0;
 
-   static bool file_exists(const std::string& path);
    static std::string stack_id(const Point& origin);
 
   protected:
@@ -130,13 +110,6 @@ class DATAREPOSITORY_API StackRasterReaderInterface {
    const TileBlockCellIndexer& _indexer;
    DynamicObject _settings;
 };
-
-// --------------------------------------------------------------------------------------------
-
-inline bool StackRasterReaderInterface::file_exists(const std::string& path) {
-   Poco::File pf(path);
-   return pf.exists();
-}
 
 // --------------------------------------------------------------------------------------------
 

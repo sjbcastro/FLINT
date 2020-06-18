@@ -6,11 +6,9 @@
 #include <moja/pocojsonutils.h>
 #include <moja/utility.h>
 
-#include <Poco/File.h>
 #include <Poco/JSON/ParseHandler.h>
 #include <Poco/JSON/Parser.h>
 #include <Poco/JSON/Stringifier.h>
-#include <Poco/Path.h>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
@@ -23,14 +21,14 @@ namespace datarepository {
 
 // --------------------------------------------------------------------------------------------
 
-FlintMetaDataRasterReader::FlintMetaDataRasterReader(const std::string& path, const std::string& prefix,
+FlintMetaDataRasterReader::FlintMetaDataRasterReader(const std::filesystem::path& path, const std::string& prefix,
                                                      const DynamicObject& settings)
     : MetaDataRasterReaderInterface(path, prefix, settings) {
-   _metaPath = (boost::format("%1%%2%%3%.json") % path % Poco::Path::separator() % prefix).str();
+   _metaPath = path / std::filesystem::path((boost::format("%1%.json") % prefix).str());
 }
 
 DynamicObject FlintMetaDataRasterReader::readMetaData() const {
-   if (file_exists(_metaPath)) {
+   if (std::filesystem::exists(_metaPath)) {
       Poco::JSON::Parser jsonMetadataParser;
       // Poco::Dynamic::Var parsedMetadata;
 
@@ -41,16 +39,16 @@ DynamicObject FlintMetaDataRasterReader::readMetaData() const {
       auto layerMetadata = parsePocoJSONToDynamic(metadata).extract<const DynamicObject>();
       return layerMetadata;
    } else {
-      BOOST_THROW_EXCEPTION(FileNotFoundException() << FileName(_metaPath));
+      BOOST_THROW_EXCEPTION(FileNotFoundException() << FileName(_metaPath.string()));
    }
 }
 
 // --------------------------------------------------------------------------------------------
 
-FlintTileRasterReader::FlintTileRasterReader(const std::string& path, const Point& origin, const std::string& prefix,
+FlintTileRasterReader::FlintTileRasterReader(const std::filesystem::path& path, const Point& origin, const std::string& prefix,
                                              const TileBlockCellIndexer& indexer, const DynamicObject& settings)
     : TileRasterReaderInterface(path, origin, prefix, indexer, settings) {
-   _tilePath = (boost::format("%1%%2%%3%_%4%.blk") % path % Poco::Path::separator() % prefix % tile_id(origin)).str();
+   _tilePath = path / std::filesystem::path((boost::format("%1%_%2%.blk") % prefix % tile_id(origin)).str());
 }
 
 FlintTileRasterReader::~FlintTileRasterReader() {}
@@ -101,7 +99,7 @@ void FlintTileRasterReader::readFlintBlockData(const BlockIdx& blk_idx, char* bl
       fileStream.open(_tilePath, std::ios::binary);
       std::streampos blockStart = blk_idx.blockIdx * block_size;
       if (fileStream.fail()) {
-         BOOST_THROW_EXCEPTION(FileReadException() << FileName(_tilePath) << Message(strerror(errno)));
+         BOOST_THROW_EXCEPTION(FileReadException() << FileName(_tilePath.string()) << Message(strerror(errno)));
       }
 
       fileStream.seekg(blockStart);
@@ -115,10 +113,10 @@ void FlintTileRasterReader::readFlintBlockData(const BlockIdx& blk_idx, char* bl
 
 // --------------------------------------------------------------------------------------------
 
-FlintStackRasterReader::FlintStackRasterReader(const std::string& path, const Point& origin, const std::string& prefix,
+FlintStackRasterReader::FlintStackRasterReader(const std::filesystem::path& path, const Point& origin, const std::string& prefix,
                                                const TileBlockCellIndexer& indexer, const DynamicObject& settings)
     : StackRasterReaderInterface(path, origin, prefix, indexer, settings) {
-   _tilePath = (boost::format("%1%%2%%3%_%4%.blk") % path % Poco::Path::separator() % prefix % stack_id(origin)).str();
+   _tilePath = path / std::filesystem::path((boost::format("%1%_%2%.blk") % prefix % stack_id(origin)).str());
 }
 
 FlintStackRasterReader::~FlintStackRasterReader() {}
@@ -170,7 +168,7 @@ void FlintStackRasterReader::readFlintBlockData(const BlockIdx& blk_idx, int nSe
       fileStream.open(_tilePath, std::ios::binary);
       std::streampos blockStart = blk_idx.blockIdx * block_size;
       if (fileStream.fail()) {
-         BOOST_THROW_EXCEPTION(FileReadException() << FileName(_tilePath) << Message(strerror(errno)));
+         BOOST_THROW_EXCEPTION(FileReadException() << FileName(_tilePath.string()) << Message(strerror(errno)));
       }
 
       fileStream.seekg(blockStart);

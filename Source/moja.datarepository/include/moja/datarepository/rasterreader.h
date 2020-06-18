@@ -8,6 +8,7 @@
 
 #include <string>
 #include <vector>
+#include <filesystem>
 
 namespace moja {
 namespace datarepository {
@@ -21,13 +22,13 @@ struct BlockIdx;
 
 class DATAREPOSITORY_API FlintMetaDataRasterReader : public MetaDataRasterReaderInterface {
   public:
-   FlintMetaDataRasterReader(const std::string& path, const std::string& prefix, const DynamicObject& settings);
+   FlintMetaDataRasterReader(const std::filesystem::path& path, const std::string& prefix, const DynamicObject& settings);
    ~FlintMetaDataRasterReader() override {}
 
    DynamicObject readMetaData() const override;
 
   private:
-   std::string _metaPath;
+   std::filesystem::path _metaPath;
 };
 
 // --------------------------------------------------------------------------------------------
@@ -38,7 +39,7 @@ class DATAREPOSITORY_API FlintMetaDataRasterReader : public MetaDataRasterReader
 
 class DATAREPOSITORY_API FlintTileRasterReader : public TileRasterReaderInterface {
   public:
-   FlintTileRasterReader(const std::string& path, const Point& origin, const std::string& prefix,
+   FlintTileRasterReader(const std::filesystem::path& path, const Point& origin, const std::string& prefix,
                          const TileBlockCellIndexer& indexer, const DynamicObject& settings);
    ~FlintTileRasterReader() override;
    void readBlockData(const BlockIdx& blkIdx, std::vector<Int8>* block) const override;
@@ -55,7 +56,7 @@ class DATAREPOSITORY_API FlintTileRasterReader : public TileRasterReaderInterfac
   private:
    void readFlintBlockData(const BlockIdx& blkIdx, char* block_data, size_t block_size) const;
 
-   std::string _tilePath;
+   std::filesystem::path _tilePath;
 };
 
 // --------------------------------------------------------------------------------------------
@@ -66,7 +67,7 @@ class DATAREPOSITORY_API FlintTileRasterReader : public TileRasterReaderInterfac
 
 class DATAREPOSITORY_API FlintStackRasterReader : public StackRasterReaderInterface {
   public:
-   FlintStackRasterReader(const std::string& path, const Point& origin, const std::string& prefix,
+   FlintStackRasterReader(const std::filesystem::path& path, const Point& origin, const std::string& prefix,
                           const TileBlockCellIndexer& indexer, const DynamicObject& settings);
    ~FlintStackRasterReader() override;
    void readBlockData(const BlockIdx& blkIdx, int nSeries, std::vector<Int8>* block) const override;
@@ -83,7 +84,7 @@ class DATAREPOSITORY_API FlintStackRasterReader : public StackRasterReaderInterf
   private:
    void readFlintBlockData(const BlockIdx& blkIdx, int nSeries, char* block_data, size_t block_size) const;
 
-   std::string _tilePath;
+   std::filesystem::path _tilePath;
 };
 
 // --------------------------------------------------------------------------------------------

@@ -10,6 +10,7 @@ set(TEST_SRCS
 	src/aspatialtileinfotests.cpp
 	src/datarepositorytests.cpp
 	src/landunitinfotests.cpp
+	src/rasterreadertests.cpp
 	src/tileblockcellindexertests.cpp
 	src/providerspatialrastertiledtests.cpp
 )
