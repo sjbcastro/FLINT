@@ -11,6 +11,7 @@ set(TEST_SRCS
     src/environmenttests.cpp
     src/floatcmptests.cpp
 	src/hashingtests.cpp
+    src/loggingtests.cpp
     src/notificationcentertests.cpp
     src/pathtests.cpp
     src/sharedlibrarytests.cpp
