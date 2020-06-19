@@ -7,10 +7,6 @@
 #include <moja/dynamic.h>
 #include <moja/types.h>
 
-#include <Poco/File.h>
-#include <Poco/FileStream.h>
-#include <Poco/TemporaryFile.h>
-
 #include <boost/format.hpp>
 #include <boost/test/unit_test.hpp>
 
@@ -23,9 +19,6 @@ using moja::datarepository::FileNotFoundException;
 using moja::datarepository::ProviderSpatialRasterTiled;
 using moja::datarepository::QueryException;
 
-using Poco::FileOutputStream;
-using Poco::TemporaryFile;
-
 struct ProviderSpatialRasterTiledTestsFixture {
    const std::string test_tile_path = "./data/TestTile/TestTile_034_001.blk";
    const std::string test_stack_path = "./data/TestTile/TestStack_034_001.blk";
@@ -35,10 +28,8 @@ struct ProviderSpatialRasterTiledTestsFixture {
    ProviderSpatialRasterTiledTestsFixture() {
       _tiles = {{34.0, 1.0}};
 
-      Poco::File TestTile(test_tile_path);
-      Poco::File TestStack(test_stack_path);
-      testTileExists = (TestTile.exists() && TestTile.isFile()) ? true : false;
-      testStackExists = (TestStack.exists() && TestStack.isFile()) ? true : false;
+      testTileExists = std::filesystem::exists(test_tile_path);
+      testStackExists = std::filesystem::exists(test_stack_path);
    }
 
    ~ProviderSpatialRasterTiledTestsFixture() {}

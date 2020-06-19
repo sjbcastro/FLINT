@@ -10,11 +10,9 @@
 #include <moja/logging.h>
 #include <moja/pocojsonutils.h>
 
-#include <Poco/File.h>
 #include <Poco/JSON/ParseHandler.h>
 #include <Poco/JSON/Parser.h>
 #include <Poco/JSON/Stringifier.h>
-#include <Poco/Path.h>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
@@ -27,16 +25,16 @@ using Poco::JSON::Parser;
 using Poco::JSON::Stringifier;
 
 #include <fstream>
+#include <filesystem>
 
 namespace moja {
 namespace flint {
 namespace configuration {
 
 JSON2ConfigurationProvider::JSON2ConfigurationProvider(const std::vector<std::string>& configFilePath) {
-   for (const std::string configFie : configFilePath) {
-      Poco::File file(configFie);
-      if (!file.exists()) {
-         BOOST_THROW_EXCEPTION(FileNotFoundException() << FileName(configFie));
+   for (const std::string configFile : configFilePath) {
+      if (!std::filesystem::exists(configFile)) {
+         BOOST_THROW_EXCEPTION(FileNotFoundException() << FileName(configFile));
       }
    }
    _configFilePath = configFilePath;
@@ -46,22 +44,20 @@ JSON2ConfigurationProvider::JSON2ConfigurationProvider(const std::vector<std::st
 
 JSON2ConfigurationProvider::JSON2ConfigurationProvider(const std::vector<std::string>& configFilePath,
                                                        const std::vector<std::string>& configProviderFilePath) {
-   for (const auto& configFie : configFilePath) {
-      Poco::File file(configFie);
-      if (!file.exists()) {
-         BOOST_THROW_EXCEPTION(FileNotFoundException() << FileName(configFie));
+   for (const auto& configFile : configFilePath) {
+      if (!std::filesystem::exists(configFile)) {
+         BOOST_THROW_EXCEPTION(FileNotFoundException() << FileName(configFile));
       }
    }
-   _configFilePath = std::move(configFilePath);
+   _configFilePath = configFilePath;
 
    if (!configProviderFilePath.empty()) {
       for (const auto& configProviderFile : configProviderFilePath) {
-         Poco::File fileProvider(configProviderFile);
-         if (!fileProvider.exists()) {
+         if (!std::filesystem::exists(configProviderFile)) {
             BOOST_THROW_EXCEPTION(FileNotFoundException() << FileName(configProviderFile));
          }
       }
-      _configProviderFilePath = std::move(configProviderFilePath);
+      _configProviderFilePath = configProviderFilePath;
       _hasProviderConfigFile = true;
    } else {
       //_configProviderFilePath = "";
@@ -438,11 +434,6 @@ void JSON2ConfigurationProvider::createLibraries(DynamicVar& parsedJSON, Configu
          config.addLibrary(item.first, parseLibraryType(item.second.extract<std::string>()));
       }
    }
-}
-
-bool JSON2ConfigurationProvider::fileExists(const std::string& path) {
-   Poco::File pf(path);
-   return pf.exists();
 }
 
 void JSON2ConfigurationProvider::createProviders(DynamicVar& parsedJSON, Configuration& config) const {

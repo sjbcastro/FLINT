@@ -32,8 +32,6 @@ class CONFIGURATION_API JSON2ConfigurationProvider : public IConfigurationProvid
    static LocalDomainType parseLocalDomainType(const std::string& type);
    static LibraryType parseLibraryType(const std::string& type);
 
-   static bool fileExists(const std::string& path);
-
    void createLocalDomain(DynamicVar& parsedJSON, Configuration& config) const;
    void createSpinup(DynamicVar& parsedJSON, Configuration& config) const;
    void createLibraries(DynamicVar& parsedJSON, Configuration& config) const;
