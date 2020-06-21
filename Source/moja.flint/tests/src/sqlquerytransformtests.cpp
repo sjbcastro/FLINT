@@ -1,4 +1,5 @@
 #include <moja/flint/sqlquerytransform.h>
+#include <moja/exception.h>
 
 #include <moja/test/mockdatarepository.h>
 #include <moja/test/mocklandunitcontroller.h>
@@ -15,6 +16,8 @@
 #include <turtle/mock.hpp>
 
 #include <memory>
+#include <fstream>
+#include <filesystem>
 
 BOOST_AUTO_TEST_SUITE(SQLQueryTransformTests)
 
@@ -28,6 +31,18 @@ struct ItemVar {
    DynamicVar val;
    std::string valStr;
 };
+
+struct SQLFileTestFixture {
+   SQLFileTestFixture() {
+      std::ofstream out("test.sql");
+      out << "select a from foo";
+      out.close();
+   }
+   ~SQLFileTestFixture() { 
+       std::filesystem::remove("test.sql");
+   }
+};
+
 
 #if 1
 
@@ -379,6 +394,40 @@ BOOST_AUTO_TEST_CASE(
    int first = sqlTransform->value();
    auto next = sqlTransform->value();
    BOOST_CHECK(next.isEmpty());
+}
+
+BOOST_FIXTURE_TEST_CASE(flint_SQLQueryTransform_SQLQueryFromFile, SQLFileTestFixture) {
+   auto mockLandUnitController = std::make_unique<mocks::MockLandUnitController>();
+   auto mockProvider = std::make_shared<mocks::MockProviderRelational>();
+
+   auto firstResult = std::make_shared<DynamicVar>(std::vector<DynamicObject>{DynamicObject({{"a", 1}})});
+
+   MOCK_EXPECT(mockProvider->GetDataSet).once().returns(*firstResult);
+   MOCK_EXPECT(mockProvider->GetDataSet).returns(DynamicVar());
+
+   auto mockRepository = std::make_unique<mocks::MockDataRepository>();
+   MOCK_EXPECT(mockRepository.get()->getProvider).returns(mockProvider);
+
+   DynamicObject config({{"queryFile", "test.sql"}, {"provider", "test"}});
+
+   auto sqlTransform = std::make_shared<mf::SQLQueryTransform>();
+   BOOST_CHECK_NO_THROW(sqlTransform->configure(config, *mockLandUnitController.get(), *mockRepository.get()));
+
+   // Check to make sure the first valid result isn't cached and returned when
+   // it shouldn't be.
+   int first = sqlTransform->value();
+   auto next = sqlTransform->value();
+   BOOST_CHECK(next.isEmpty());
+}
+
+BOOST_FIXTURE_TEST_CASE(flint_SQLQueryTransform_ExceptionIsThrownWhenFileNotFound, SQLFileTestFixture) {
+   auto mockLandUnitController = std::make_unique<mocks::MockLandUnitController>();
+   auto mockRepository = std::make_unique<mocks::MockDataRepository>();
+   auto sqlTransform = std::make_shared<mf::SQLQueryTransform>();
+
+   DynamicObject config({{"queryFile", "nonexistant.sql"}, {"provider", "test"}});
+
+   BOOST_CHECK_THROW(sqlTransform->configure(config, *mockLandUnitController.get(), *mockRepository.get()), moja::FileNotFoundException);
 }
 
 BOOST_AUTO_TEST_SUITE_END();

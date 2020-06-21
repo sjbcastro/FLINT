@@ -11,11 +11,10 @@
 
 #include <moja/exception.h>
 
-#include <Poco/File.h>
-
 #include <boost/algorithm/string/join.hpp>
 
 #include <fstream>
+#include <filesystem>
 
 using moja::datarepository::IProviderRelationalInterface;
 
@@ -68,7 +67,7 @@ void SQLQueryTransform::configure(DynamicObject config, const ILandUnitControlle
 }
 
 std::string SQLQueryTransform::readSQLFile(const std::string& path) {
-   if (!Poco::File(path).exists()) {
+   if (!std::filesystem::exists(path)) {
       throw FileNotFoundException(path);
    }
 
