@@ -21,9 +21,6 @@
 #include <moja/notificationcenter.h>
 #include <moja/signals.h>
 
-#include <Poco/File.h>
-#include <Poco/Path.h>
-
 #include <boost/format.hpp>
 
 #include <fstream>
@@ -76,25 +73,19 @@ void WriteSystemConfig::subscribe(NotificationCenter& notificationCenter) {
 // --------------------------------------------------------------------------------------------
 
 void WriteSystemConfig::onSystemInit() {
-   Poco::File workingFolder(_outputPath);
-   if (!workingFolder.exists()) {
+   if (!std::filesystem::exists(_outputPath)) {
       try {
-         workingFolder.createDirectories();
+         std::filesystem::create_directories(_outputPath);
       } catch (Poco::FileExistsException&) { /* Poco has a bug here, exception shouldn't be thrown, has been fixed
                                                 in 1.7.8 */
       }
    }
-   if (workingFolder.exists() && !workingFolder.isDirectory()) {
+   if (std::filesystem::exists(_outputPath) && !std::filesystem::is_directory(_outputPath)) {
       MOJA_LOG_ERROR << "Error creating spatial tiled point configurations output folder: " << _outputPath;
    }
-   auto outputFolderPath = (boost::format("%1%%2%%3%") % workingFolder.path() % Poco::Path::separator() % _name).str();
-   Poco::File outputFolder(outputFolderPath);
-   if (!outputFolder.exists()) {
-      try {
-         outputFolder.createDirectories();
-      } catch (Poco::FileExistsException&) { /* Poco has a bug here, exception shouldn't be thrown, has been fixed
-                                                in 1.7.8 */
-      }
+   std::filesystem::path outputFolderPath = _outputPath / std::filesystem::path(_name);
+   if (!std::filesystem::exists(outputFolderPath)) {
+      std::filesystem::create_directories(outputFolderPath);
    }
 }
 
@@ -313,24 +304,23 @@ void WriteSystemConfig::WriteConfig(std::string notificationStr) const {
    auto timestep = timing->step();
    auto timesubstep = timing->subStep();
 
-   Poco::File workingFolder(_outputPath);
-   auto configFilename =
-       (boost::format("%1%%2%%3%%4%%5%_%6%_%7%_%8%_%9%_%10%.json") % workingFolder.path() % Poco::Path::separator() %
-        _name % Poco::Path::separator() %
+   std::filesystem::path configName =
+       (boost::format("%1%_%2%_%3%_%4%_%5%_%6%.json") %
         boost::io::group(std::setfill('0'), std::setw(5), _spatialLocationInfo ? _spatialLocationInfo->_tileIdx : 0) %
         boost::io::group(std::setfill('0'), std::setw(3), _spatialLocationInfo ? _spatialLocationInfo->_blockIdx : 0) %
         boost::io::group(std::setfill('0'), std::setw(6), _spatialLocationInfo ? _spatialLocationInfo->_cellIdx : 0) %
         notificationStr % timestep % timesubstep)
            .str();
 
-   Poco::File configFile(configFilename);
-   if (configFile.exists()) configFile.remove(false);  // delete existing config file
+   std::filesystem::path configFilename = _outputPath / std::filesystem::path(_name) / configName;
+
+   if (std::filesystem::exists(configFilename)) std::filesystem::remove(configFilename);  // delete existing config file
 
    // configFile.createFile()
-   FileHandle pFile(configFilename, "wb");
+   FileHandle pFile(configFilename.string(), "wb");
 
    std::ofstream fout;
-   fout.open(configFilename);  // , ios::out | ios::trunc);
+   fout.open(configFilename.string());  // , ios::out | ios::trunc);
 
    if (fout.fail()) {
       return;

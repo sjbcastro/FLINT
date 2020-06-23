@@ -21,6 +21,7 @@ set(TEST_SRCS
 	src/operationmanagerublastests.cpp
     src/sqlquerytransformtests.cpp
 	src/recordaccumulatorintegrationtests.cpp
+    src/writesystemconfigtests.cpp
 )
 
 add_executable(${TESTUNIT} ${TEST_SRCS})

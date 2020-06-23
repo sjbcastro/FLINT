@@ -4,6 +4,7 @@
 #include <moja/flint/modulebase.h>
 
 #include <boost/iostreams/stream_buffer.hpp>
+#include <filesystem>
 
 namespace moja {
 namespace flint {
@@ -82,10 +83,10 @@ class FLINT_API WriteSystemConfig : public flint::ModuleBase {
    std::shared_ptr<const SpatialLocationInfo> _spatialLocationInfo;
 
    // Other
-   std::string _name;             // simulation name
-   std::string _outputPath;       // output_path
-   bool _onNotificationArray[5];  // when to capture the configuration (which notification method) - TimingInit
-                                  // [default], TimingShutdown, Error
+   std::string _name;                   // simulation name
+   std::filesystem::path _outputPath;   // output_path
+   bool _onNotificationArray[5];        // when to capture the configuration (which notification method) - TimingInit
+                                        // [default], TimingShutdown, Error
 
    enum class OnNotificationType {
       PreTimingSequence = 0,
