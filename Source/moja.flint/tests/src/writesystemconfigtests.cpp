@@ -7,7 +7,7 @@
 #include <fstream>
 #include <filesystem>
 
-BOOST_AUTO_TEST_SUITE(asdf)
+BOOST_AUTO_TEST_SUITE(WriteSystemConfigTests)
 
 BOOST_AUTO_TEST_CASE(flint_WriteSystemConfig_ExceptionIsThrownWhenFileNotFound) {
    std::filesystem::path outputPath = "outputPath";

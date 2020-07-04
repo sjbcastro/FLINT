@@ -19,6 +19,7 @@
 #include <boost/iostreams/stream_buffer.hpp>
 
 #include <limits>
+#include <filesystem>
 #include <math.h>
 
 namespace moja {
@@ -299,32 +300,11 @@ void WriteVariableGrid::DataSettingsT<T>::doSystemInit(flint::ILandUnitDataWrapp
    flint::VariableAndPoolStringBuilder databaseNameBuilder(_landUnitData, _outputPath);
    _outputPath = databaseNameBuilder.result();
 
-   std::string variableFolder;
-   if (_forceVariableFolderName) {
-      variableFolder = (boost::format("%1%%2%") % Poco::Path::separator() % _name).str();
-   } else {
-      variableFolder = "";
-   }
+   std::filesystem::path workingFolder(_outputPath);
+   const std::filesystem::path spatialOutputFolderPath =
+       _forceVariableFolderName ? workingFolder / _name : workingFolder;
 
-   Poco::File workingFolder(_outputPath);
-   const auto spatialOutputFolderPath = (boost::format("%1%%2%") % workingFolder.path() % variableFolder
-                                         // % Poco::Path::separator()
-                                         // % _name
-                                         )
-                                            .str();
-
-   try {
-      workingFolder.createDirectories();
-   } catch (
-       Poco::FileExistsException&) { /* Poco has a bug here, exception shouldn't be thrown, has been fixed in 1.7.8 */
-   }
-
-   Poco::File spatialOutputFolder(spatialOutputFolderPath);
-   try {
-      spatialOutputFolder.createDirectories();
-   } catch (
-       Poco::FileExistsException&) { /* Poco has a bug here, exception shouldn't be thrown, has been fixed in 1.7.8 */
-   }
+   std::filesystem::create_directories(spatialOutputFolderPath);
 }
 
 // --------------------------------------------------------------------------------------------

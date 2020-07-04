@@ -22,6 +22,7 @@ set(TEST_SRCS
     src/sqlquerytransformtests.cpp
 	src/recordaccumulatorintegrationtests.cpp
     src/writesystemconfigtests.cpp
+    src/writevariablegridtests.cpp
 )
 
 add_executable(${TESTUNIT} ${TEST_SRCS})
